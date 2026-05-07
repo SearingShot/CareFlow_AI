@@ -1,0 +1,18 @@
+from sqlalchemy import Column, Integer, String
+from app.database import Base
+
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String, nullable=False)
+
+    phone_number = Column(String, nullable=False, index=True)
+
+    appointment_date = Column(String, nullable=False)
+
+    appointment_time = Column(String, nullable=False)
+
+    status = Column(String, default="booked")
