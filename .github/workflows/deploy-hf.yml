@@ -1,0 +1,35 @@
+name: Deploy Backend to HuggingFace
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Push Backend to HF Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          git clone https://SearingShot:${HF_TOKEN}@huggingface.co/spaces/SearingShot/careflow-ai-backend hf-space
+
+          rsync -av --delete backend/ hf-space/
+
+          cd hf-space
+
+          git add .
+
+          git commit -m "Auto deploy from GitHub" || echo "No changes"
+
+          git push
