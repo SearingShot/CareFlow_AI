@@ -328,7 +328,7 @@ Generate a concise response summarizing the appointment list or explaining that 
                 "tool_activity": None
             }
         
-        # CANCEL APPOINTMENT
+    # CANCEL APPOINTMENT
     elif intent == "cancel_appointment":
 
         extraction_prompt = f"""
