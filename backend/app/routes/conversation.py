@@ -35,6 +35,12 @@ def get_or_create_session(session_id: str | None):
             "ended_at": None,
             "history": [],
             "tool_events": [],
+            "user_memory": {
+                "name": None,
+                "phone_number": None,
+            },
+            "pending_action": None,
+            "pending_data": {},
         }
 
     return conversation_sessions[session_id]
@@ -100,7 +106,8 @@ def chat_with_agent(
         result = process_conversation(
             user_message=user_message,
             db=db,
-            conversation_history=conversation_history
+            conversation_history=conversation_history,
+            session=session
         )
     except Exception as exc:
         return {

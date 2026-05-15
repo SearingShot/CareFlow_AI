@@ -23,7 +23,7 @@ genai.configure(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
 TOOLS = {
     "identify_user": identify_user,
@@ -64,9 +64,15 @@ def detect_intent(user_message: str):
 def process_conversation(
     user_message: str,
     db: Session,
-    conversation_history=None
+    conversation_history=None,
+    session=None
 ):
     conversation_history = conversation_history or []
+    session = session or {}
+
+    user_memory = session.get("user_memory", {})
+    pending_action = session.get("pending_action")
+    pending_data = session.get("pending_data", {})
 
     intent = detect_intent(user_message)
     recent_history = conversation_history[-8:]
@@ -133,6 +139,12 @@ Example format:
 
             extracted_data = json.loads(extraction_text)
 
+            if extracted_data.get("name"):
+                session["user_memory"]["name"] = extracted_data.get("name")
+
+            if extracted_data.get("phone_number"):
+                session["user_memory"]["phone_number"] = extracted_data.get("phone_number")
+
             tool_result = identify_user(
                 **extracted_data
             )
@@ -192,6 +204,35 @@ Example format:
         try:
 
             extracted_data = json.loads(extraction_text)
+
+            if not extracted_data.get("name"):
+                extracted_data["name"] = user_memory.get("name")
+
+            if not extracted_data.get("phone_number"):
+                extracted_data["phone_number"] = user_memory.get("phone_number")
+
+            required_fields = [
+                "name",
+                "phone_number",
+                "appointment_date",
+                "appointment_time"
+            ]
+
+            missing_fields = []
+
+            for field in required_fields:
+
+                if not extracted_data.get(field):
+                    missing_fields.append(field)
+
+            if missing_fields:
+
+                missing_text = ", ".join(missing_fields)
+
+                return {
+                    "response": f"I still need the following details to book your appointment: {missing_text}.",
+                    "tool_activity": None
+                }
 
             tool_result = book_appointment(
                 db=db,

@@ -48,7 +48,7 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {
-        "message": "Mykare Voice AI Backend Running"
+        "message": "CareFlow AI Backend Running"
     }
 
 
