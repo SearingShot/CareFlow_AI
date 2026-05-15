@@ -12,24 +12,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Push Backend to HF Space
+      - name: Clone HuggingFace Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-
           git clone https://SearingShot:${HF_TOKEN}@huggingface.co/spaces/SearingShot/careflow-ai-backend hf-space
 
+      - name: Sync backend files
+        run: |
           rsync -av --delete backend/ hf-space/
 
+      - name: Push to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
           cd hf-space
+
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
 
           git add .
 
-          git commit -m "Auto deploy from GitHub" || echo "No changes"
+          git commit -m "Auto deploy from GitHub" || echo "No changes to commit"
 
-          git push
+          git push origin main
