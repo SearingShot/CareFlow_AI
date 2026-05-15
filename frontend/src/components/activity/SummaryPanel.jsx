@@ -1,173 +1,373 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ToolActivityCard from './ToolActivityCard.jsx';
+import { motion } from 'framer-motion';
 
-export default function SummaryPanel({ messages, latestToolActivity, summary, onEndConversation, isLoading }) {
-  const messageCount = messages.filter((m) => m.role === 'user').length;
+export default function SummaryPanel({
+  messages = [],
+  latestToolActivity,
+  summary,
+  onEndConversation,
+  isLoading,
+  onQuickAction,
+}) {
 
-  // Extract appointment info from tool activities in messages
-  const appointments = messages
-    .filter((m) => m.toolActivity?.tool_name === 'book_appointment' && m.toolActivity?.tool_result)
-    .map((m) => m.toolActivity.tool_result?.appointment || m.toolActivity.tool_result);
+  const quickActions = [
+    'Book appointment',
+    'Find slots',
+    'Reschedule',
+    'Cancel visit',
+  ];
 
-  const sessionStart = messages[0]?.timestamp
-    ? new Date(messages[0].timestamp).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      })
-    : '--';
+  const conversationHighlights = buildHighlights(messages);
 
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto pr-1" style={{ maxHeight: '100%' }}>
-      {/* Session Info */}
-      <div className="glass-panel px-4 py-4">
-        <PanelHeader title="Session Info" />
-        <div className="grid grid-cols-3 gap-2">
-          <Metric label="Messages" value={messageCount} />
-          <Metric label="Started" value={sessionStart} />
-          <Metric label="State" value="Active" tone="#10b981" />
-        </div>
-        {onEndConversation && (
-          <button
-            onClick={onEndConversation}
-            disabled={isLoading}
-            className="mt-3 w-full rounded-xl px-3 py-2.5 text-xs font-semibold disabled:opacity-40"
-            style={{
-              color: '#06b6d4',
-              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.08))',
-              border: '1px solid rgba(6, 182, 212, 0.22)',
-            }}
-          >
-            End Conversation
-          </button>
-        )}
-      </div>
+    <div className="flex h-full flex-col gap-5 overflow-hidden">
 
-      {summary && (
-        <div className="glass-panel px-4 py-4">
-          <PanelHeader title="Conversation Summary" />
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-            {summary.short_summary}
-          </p>
-          <div className="mt-3 space-y-2">
-            <InfoRow label="Messages" value={summary.message_count ?? 0} />
-            <InfoRow label="Session ID" value={summary.session_id?.slice(0, 8) || '--'} />
-          </div>
-        </div>
-      )}
+      {/* Workspace Overview */}
+      <section
+        className="rounded-[24px] p-4 md:rounded-[28px] md:p-5"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(22,24,29,0.72), rgba(12,13,17,0.94))',
+          border: '1px solid rgba(255,255,255,0.03)',
+          boxShadow:
+            '0 24px 70px rgba(0,0,0,0.24)',
+        }}
+      >
 
-      {/* Latest Tool Activity */}
-      <AnimatePresence mode="wait">
-        {latestToolActivity && (
-          <motion.div
-            key={latestToolActivity.tool_name + Date.now()}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="glass-panel px-4 py-4">
-              <PanelHeader title="Latest Activity" />
-              <ToolActivityCard activity={latestToolActivity} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <div className="mb-4 flex items-center justify-between">
 
-      {/* Booked Appointments */}
-      {appointments.length > 0 && (
-        <div className="glass-panel px-4 py-4">
-          <PanelHeader title="Appointments" />
-          <div className="space-y-2">
-            {appointments.map((apt, i) => (
-              <div
-                key={i}
-                className="rounded-lg px-3 py-2 text-xs space-y-1"
-                style={{
-                  background: 'rgba(16, 185, 129, 0.06)',
-                  border: '1px solid rgba(16, 185, 129, 0.15)',
-                }}
-              >
-                {apt.name && (
-                  <div className="font-medium" style={{ color: '#10b981' }}>
-                    {apt.name}
-                  </div>
-                )}
-                <div style={{ color: 'var(--color-text-secondary)' }}>
-                  {apt.date || apt.appointment_date} at {apt.time || apt.appointment_time}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Quick Hints */}
-      <div className="glass-panel px-4 py-3">
-        <PanelHeader title="Try Saying" />
-        <div className="space-y-1.5">
-          {[
-            'Book an appointment for tomorrow',
-            'Show my appointments',
-            'Cancel my appointment',
-            'What slots are available?',
-          ].map((hint, i) => (
-            <button
-              key={i}
-              className="w-full text-left text-xs px-3 py-2 rounded-lg"
+          <div>
+            <p
+              className="text-[10px] uppercase tracking-[0.34em]"
               style={{
-                color: 'var(--color-text-secondary)',
-                background: 'rgba(148, 163, 184, 0.05)',
-                border: '1px solid rgba(148, 163, 184, 0.08)',
+                color: 'var(--color-text-faint)',
               }}
             >
-              {hint}
+              Session Overview
+            </p>
+
+            <h2
+              className="mt-2 text-[15px] font-semibold"
+              style={{
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              CareFlow Workspace
+            </h2>
+          </div>
+
+          <div
+            className="rounded-full px-3 py-1 text-[11px]"
+            style={{
+              background: 'rgba(143,169,142,0.08)',
+              border: '1px solid rgba(143,169,142,0.14)',
+              color: '#A8B59F',
+            }}
+          >
+            Operational
+          </div>
+
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+
+          <MetricCard
+            label="Voice Status"
+            value="Connected"
+          />
+
+          <MetricCard
+            label="Tools"
+            value={
+              latestToolActivity?.tool_name
+                ? `${latestToolActivity.tool_name} Active`
+                : 'Scheduling Active'
+            }
+          />
+
+          <MetricCard
+            label="Messages"
+            value={`${messages.length}`}
+          />
+
+          <MetricCard
+            label="Session"
+            value="Live"
+          />
+
+        </div>
+      </section>
+
+      {/* Conversation */}
+      <section
+        className="hidden rounded-[24px] p-4 md:block md:rounded-[28px] md:p-5"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(18,20,25,0.66), rgba(11,12,16,0.92))',
+          border: '1px solid rgba(255,255,255,0.025)',
+        }}
+      >
+
+        <div className="mb-4 flex items-center justify-between">
+
+          <div>
+            <p
+              className="text-[10px] uppercase tracking-[0.34em]"
+              style={{
+                color: 'var(--color-text-faint)',
+              }}
+            >
+              Conversation
+            </p>
+
+            <h3
+              className="mt-1 text-[15px] font-semibold"
+              style={{
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              Insights
+            </h3>
+          </div>
+
+          <div
+            className="rounded-full px-3 py-1 text-[11px]"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            {messages.length} messages
+          </div>
+        </div>
+
+        <div className="space-y-3">
+
+          {conversationHighlights.length > 0 ? (
+            conversationHighlights.map((item, index) => (
+              <motion.div
+                key={item}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.05,
+                }}
+                className="rounded-2xl px-4 py-3"
+                style={{
+                  background: 'rgba(255,255,255,0.022)',
+                  border: '1px solid rgba(255,255,255,0.02)',
+                }}
+              >
+
+                <div className="flex items-start gap-3">
+
+                  <div
+                    className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{
+                      background: '#CBCBCB',
+                    }}
+                  />
+
+                  <p
+                    className="text-[13px] leading-[1.75]"
+                    style={{
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    {item}
+                  </p>
+
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div
+              className="rounded-2xl p-4"
+              style={{
+                background: 'rgba(255,255,255,0.022)',
+                border: '1px solid rgba(255,255,255,0.02)',
+              }}
+            >
+              <p
+                className="text-[13px]"
+                style={{
+                  color: 'var(--color-text-muted)',
+                }}
+              >
+                No activity yet.
+              </p>
+            </div>
+          )}
+
+        </div>
+      </section>
+
+      {/* Actions */}
+      <section
+        className="rounded-[24px] p-4 md:rounded-[28px] md:p-5"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(18,20,24,0.72), rgba(11,12,15,0.94))',
+          border: '1px solid rgba(255,255,255,0.025)',
+        }}
+      >
+
+        <div className="mb-4">
+
+          <p
+            className="text-[10px] uppercase tracking-[0.34em]"
+            style={{
+              color: 'var(--color-text-faint)',
+            }}
+          >
+            Quick Actions
+          </p>
+
+          <h3
+            className="mt-1 text-[15px] font-semibold"
+            style={{
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            Suggested Tasks
+          </h3>
+        </div>
+
+        <div
+          className="
+            flex
+            gap-2
+            overflow-x-auto
+            pb-1
+            scrollbar-hide
+            snap-x
+            snap-mandatory
+            md:flex-wrap
+            md:overflow-visible
+          "
+        >
+
+          {quickActions.map((action) => (
+            <button
+              key={action}
+              onClick={() => onQuickAction?.(action)}
+              className="
+                snap-start
+                rounded-full
+                px-3
+                py-[7px]
+                text-[11px]
+                leading-none
+                font-medium
+                whitespace-nowrap
+                transition-all
+                duration-200
+                hover:-translate-y-[1px]
+                hover:scale-[1.02]
+                active:scale-[0.98]
+              "
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(28,32,40,0.96), rgba(18,20,26,0.96))',
+
+                border: '1px solid rgba(255,255,255,0.08)',
+
+                color: 'rgba(235,240,255,0.88)',
+
+                boxShadow: `
+                  inset 0 1px 0 rgba(255,255,255,0.04),
+                  0 4px 14px rgba(0,0,0,0.22)
+                `,
+                maxWidth: '100%',
+                letterSpacing: '0.01em'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background =
+                  'linear-gradient(180deg, rgba(42,48,60,0.98), rgba(24,28,36,0.98))';
+
+                e.currentTarget.style.border =
+                  '1px solid rgba(120,170,255,0.24)';
+
+                e.currentTarget.style.boxShadow =
+                  '0 0 0 1px rgba(120,170,255,0.08), 0 10px 24px rgba(0,0,0,0.32)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  'linear-gradient(180deg, rgba(28,32,40,0.96), rgba(18,20,26,0.96))';
+
+                e.currentTarget.style.border =
+                  '1px solid rgba(255,255,255,0.08)';
+
+                e.currentTarget.style.boxShadow =
+                  'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 14px rgba(0,0,0,0.22)';
+              }}
+            >
+              {action}
             </button>
           ))}
+
         </div>
-      </div>
+
+      </section>
     </div>
   );
 }
 
-function InfoRow({ label, value }) {
-  return (
-    <div className="flex items-center justify-between text-xs">
-      <span style={{ color: 'var(--color-text-muted)' }}>{label}</span>
-      <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-        {value}
-      </span>
-    </div>
-  );
-}
+/* -------------------------------- */
+/* Metric Card */
+/* -------------------------------- */
 
-function Metric({ label, value, tone = '#94a3b8' }) {
+function MetricCard({
+  label,
+  value,
+}) {
   return (
     <div
-      className="rounded-xl px-3 py-2.5"
+      className="rounded-[20px] p-3"
       style={{
-        background: 'rgba(2, 6, 23, 0.24)',
-        border: '1px solid rgba(148, 163, 184, 0.1)',
+        background: 'rgba(255,255,255,0.022)',
+        border: '1px solid rgba(255,255,255,0.025)',
       }}
     >
-      <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-muted)' }}>
+
+      <p
+        className="text-[10px] uppercase tracking-[0.24em]"
+        style={{
+          color: 'var(--color-text-faint)',
+        }}
+      >
         {label}
-      </div>
-      <div className="mt-1 truncate text-xs font-semibold" style={{ color: tone }}>
+      </p>
+
+      <h4
+        className="mt-2 text-[13px] font-medium"
+        style={{
+          color: 'var(--color-text-primary)',
+        }}
+      >
         {value}
-      </div>
+      </h4>
+
     </div>
   );
 }
 
-function PanelHeader({ title }) {
-  return (
-    <h3
-      className="text-xs font-semibold uppercase tracking-wider mb-3"
-      style={{ color: 'var(--color-text-muted)' }}
-    >
-      {title}
-    </h3>
-  );
+/* -------------------------------- */
+/* Helpers */
+/* -------------------------------- */
+
+function buildHighlights(messages) {
+
+  const assistantMessages = messages
+    .filter((m) => m.role === 'assistant')
+    .slice(-3);
+
+  return assistantMessages.map((m) => {
+
+    if (m.content.length > 110) {
+      return `${m.content.slice(0, 110)}...`;
+    }
+
+    return m.content;
+  });
 }

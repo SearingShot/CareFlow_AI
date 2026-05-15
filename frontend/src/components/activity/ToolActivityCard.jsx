@@ -4,59 +4,51 @@ import { motion } from 'framer-motion';
 const toolMeta = {
   identify_user: {
     icon: 'ID',
-    label: 'Identifying User',
+    label: 'Identity Verification',
     doneLabel: 'User Identified',
-    color: '#14b8a6',
-    bgColor: 'rgba(20, 184, 166, 0.08)',
-    borderColor: 'rgba(20, 184, 166, 0.2)',
+    tint: 'rgba(235,240,245,0.88)',
   },
+
   fetch_slots: {
-    icon: 'S',
-    label: 'Checking Slots',
-    doneLabel: 'Available Slots Found',
-    color: '#3b82f6',
-    bgColor: 'rgba(59, 130, 246, 0.08)',
-    borderColor: 'rgba(59, 130, 246, 0.2)',
+    icon: 'SL',
+    label: 'Availability Lookup',
+    doneLabel: 'Slots Retrieved',
+    tint: 'rgba(255,255,227,0.92)',
   },
+
   book_appointment: {
-    icon: '+',
-    label: 'Booking Appointment',
-    doneLabel: 'Appointment Booked',
-    color: '#10b981',
-    bgColor: 'rgba(16, 185, 129, 0.08)',
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    icon: 'BK',
+    label: 'Appointment Booking',
+    doneLabel: 'Appointment Confirmed',
+    tint: 'rgba(214,228,201,0.92)',
   },
+
   cancel_appointment: {
-    icon: 'X',
-    label: 'Cancelling Appointment',
+    icon: 'CN',
+    label: 'Cancellation Request',
     doneLabel: 'Appointment Cancelled',
-    color: '#ef4444',
-    bgColor: 'rgba(239, 68, 68, 0.08)',
-    borderColor: 'rgba(239, 68, 68, 0.2)',
+    tint: 'rgba(255,210,210,0.92)',
   },
+
   modify_appointment: {
-    icon: 'M',
-    label: 'Modifying Appointment',
-    doneLabel: 'Appointment Modified',
-    color: '#f59e0b',
-    bgColor: 'rgba(245, 158, 11, 0.08)',
-    borderColor: 'rgba(245, 158, 11, 0.2)',
+    icon: 'RS',
+    label: 'Reschedule Request',
+    doneLabel: 'Appointment Rescheduled',
+    tint: 'rgba(255,240,210,0.92)',
   },
+
   retrieve_appointments: {
-    icon: 'A',
-    label: 'Retrieving Appointments',
+    icon: 'AP',
+    label: 'Appointment Retrieval',
     doneLabel: 'Appointments Retrieved',
-    color: '#8b5cf6',
-    bgColor: 'rgba(139, 92, 246, 0.08)',
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    tint: 'rgba(230,232,240,0.92)',
   },
+
   end_conversation: {
-    icon: 'E',
-    label: 'Ending Conversation',
+    icon: 'SM',
+    label: 'Conversation Summary',
     doneLabel: 'Summary Generated',
-    color: '#06b6d4',
-    bgColor: 'rgba(6, 182, 212, 0.08)',
-    borderColor: 'rgba(6, 182, 212, 0.2)',
+    tint: 'rgba(240,240,240,0.92)',
   },
 };
 
@@ -67,14 +59,14 @@ export default function ToolActivityCard({ activity }) {
     icon: 'T',
     label: activity.tool_name,
     doneLabel: activity.tool_name,
-    color: '#94a3b8',
-    bgColor: 'rgba(148, 163, 184, 0.08)',
-    borderColor: 'rgba(148, 163, 184, 0.15)',
+    tint: 'rgba(235,240,245,0.88)',
   };
 
   const result = activity.tool_result;
   const isSuccess = result?.success !== false;
-  const statusColor = isSuccess ? meta.color : '#ef4444';
+  const statusColor = isSuccess
+    ? meta.tint
+    : 'rgba(255,210,210,0.92)';
   const appointment = result?.appointment || result?.updated_appointment || result || {};
   const user = result?.user || null;
   const statusLabel = isSuccess ? meta.doneLabel : 'Action Needs Attention';
@@ -115,8 +107,8 @@ export default function ToolActivityCard({ activity }) {
               key={item.id}
               className="rounded-lg px-3 py-2 text-xs"
               style={{
-                background: `${meta.color}10`,
-                border: `1px solid ${meta.color}22`,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.05)',
               }}
             >
               <div className="font-semibold" style={{ color: statusColor }}>
@@ -140,9 +132,12 @@ export default function ToolActivityCard({ activity }) {
               key={`${slot}-${i}`}
               className="text-[10px] px-2.5 py-1 rounded-full"
               style={{
-                background: `${meta.color}15`,
-                border: `1px solid ${meta.color}30`,
-                color: meta.color,
+                background: 'rgba(255,255,255,0.04)',
+
+                border:
+                  '1px solid rgba(255,255,255,0.06)',
+
+                color: statusColor,
               }}
             >
               {typeof slot === 'string' ? slot : slot.time || slot.date || JSON.stringify(slot)}
@@ -171,19 +166,26 @@ export default function ToolActivityCard({ activity }) {
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       className="rounded-xl px-4 py-3.5 tool-card-shimmer shadow-lg"
       style={{
-        background: meta.bgColor,
-        border: `1px solid ${isSuccess ? meta.borderColor : 'rgba(239, 68, 68, 0.3)'}`,
-        boxShadow: `0 4px 20px ${meta.bgColor}`,
+        background:
+          'linear-gradient(180deg, rgba(28,32,40,0.94), rgba(18,20,26,0.96))',
+
+        border:
+          '1px solid rgba(255,255,255,0.05)',
+
+        boxShadow:
+          '0 12px 30px rgba(0,0,0,0.18)',
       }}
     >
       <div className="flex items-start gap-3">
         <span
           className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shadow-sm"
           style={{
-            background: `${statusColor}20`,
-            border: `1px solid ${statusColor}40`,
+            background: 'rgba(255,255,255,0.04)',
+
+            border:
+              '1px solid rgba(255,255,255,0.06)',
+
             color: statusColor,
-            textShadow: `0 0 10px ${statusColor}`,
           }}
         >
           {meta.icon}
@@ -201,7 +203,7 @@ export default function ToolActivityCard({ activity }) {
                 border: `1px solid ${statusColor}22`,
               }}
             >
-              {isSuccess ? 'Success' : 'Issue'}
+              {isSuccess ? 'Completed' : 'Attention'}
             </span>
           </div>
           <div className="mt-0.5 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>

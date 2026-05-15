@@ -13,44 +13,85 @@ export default function MessageBubble({ message }) {
   };
 
   return (
-    <div className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
-      {/* Avatar icon */}
+    <div
+      className={`flex items-start gap-3 ${
+        isUser ? 'flex-row-reverse' : ''
+      }`}
+    >
+      {/* Avatar */}
       <div
-        className="message-avatar w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+        className="
+          message-avatar
+          mt-1
+          flex
+          h-8
+          w-8
+          shrink-0
+          items-center
+          justify-center
+          rounded-full
+        "
         data-role={isUser ? 'user' : 'assistant'}
       >
         <span
-          className="text-xs font-semibold"
-          style={{ color: isUser ? '#a78bfa' : '#00e5ff' }}
+          className="text-[11px] font-semibold tracking-wide"
+          style={{
+            color: isUser
+              ? '#B7C0CC'
+              : '#CBCBCB',
+          }}
         >
-          {isUser ? 'U' : 'AI'}
+          {isUser ? 'YOU' : 'AI'}
         </span>
       </div>
 
-      {/* Message content */}
-      <div className={`flex flex-col gap-1.5 w-full max-w-[88%] md:max-w-[78%] ${isUser ? 'items-end' : 'items-start'}`}>
+      {/* Content */}
+      <div
+        className={`
+          flex
+          w-full
+          flex-col
+          gap-2
+          ${isUser ? 'items-end' : 'items-start'}
+        `}
+      >
         <div
-          className="message-bubble px-4 py-3 text-[14px] leading-6 shadow-sm whitespace-pre-wrap"
+          className="
+            message-bubble
+            whitespace-pre-wrap
+            px-5
+            py-4
+            text-[14px]
+            leading-[1.8]
+          "
           style={{
-            borderRadius: isUser ? '16px 16px 5px 16px' : '16px 16px 16px 5px',
-            color: isUser ? '#e2e8f0' : '#f0f4f8',
+            maxWidth: '78%',
+            borderRadius: isUser
+              ? '20px 20px 8px 20px'
+              : '20px 20px 20px 8px',
+
+            color: isUser
+              ? '#E6EAF0'
+              : '#F1F3F6',
           }}
           data-role={isUser ? 'user' : 'assistant'}
         >
           {message.content}
         </div>
 
-        {/* Tool Activity Card (inline) */}
+        {/* Tool Activity */}
         {message.toolActivity && (
           <div className="mt-1 w-full max-w-[560px]">
             <ToolActivityCard activity={message.toolActivity} />
           </div>
         )}
 
-        {/* Timestamp */}
+        {/* Time */}
         <span
-          className="text-[10px] px-1"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="px-1 text-[10px]"
+          style={{
+            color: 'var(--color-text-muted)',
+          }}
         >
           {formatTime(message.timestamp)}
         </span>

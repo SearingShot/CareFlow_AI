@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { endConversation as requestEndConversation, sendChatMessage } from '../services/api';
 
-const STORAGE_KEY = 'careflow-chat-state';
+const STORAGE_KEY = 'careflow-temp-chat';
 
 const createSessionId = () => {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
@@ -49,8 +49,18 @@ export function useChat() {
   const [summary, setSummary] = useState(initialState.summary);
   const [isLoading, setIsLoading] = useState(false);
   const [latestToolActivity, setLatestToolActivity] = useState(null);
+  const [pendingMessage, setPendingMessage] = useState('');
 
   useEffect(() => {
+    const isFreshSession =
+      messages.length <= 1 &&
+      messages[0]?.id === 'welcome';
+
+    if (isFreshSession) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
@@ -73,6 +83,7 @@ export function useChat() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    setPendingMessage(getPendingMessage(text));
     setIsLoading(true);
     setLatestToolActivity(null);
 
@@ -113,6 +124,7 @@ export function useChat() {
       setMessages((prev) => [...prev, errorMessage]);
       return null;
     } finally {
+      setPendingMessage('');
       setIsLoading(false);
     }
   }, [isLoading, sessionId]);
@@ -173,5 +185,39 @@ export function useChat() {
     sendMessage,
     endConversation,
     clearChat,
+    pendingMessage,
   };
+}
+
+
+function getPendingMessage(text) {
+  const value = text.toLowerCase();
+
+  if (
+    value.includes('slot') ||
+    value.includes('availability')
+  ) {
+    return 'Checking appointment availability';
+  }
+
+  if (
+    value.includes('book') ||
+    value.includes('appointment')
+  ) {
+    return 'Preparing booking workflow';
+  }
+
+  if (
+    value.includes('reschedule')
+  ) {
+    return 'Looking for alternate schedules';
+  }
+
+  if (
+    value.includes('cancel')
+  ) {
+    return 'Retrieving appointment details';
+  }
+
+  return 'Processing your request';
 }
