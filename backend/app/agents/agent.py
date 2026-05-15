@@ -60,7 +60,6 @@ def detect_intent(user_message: str):
     return "normal"
 
 
-
 def process_conversation(
     user_message: str,
     db: Session,
