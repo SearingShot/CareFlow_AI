@@ -40,6 +40,6 @@ jobs:
 
           git branch -M main
 
-          git remote add hf https://SearingShot:${HF_TOKEN}@huggingface.co/spaces/SearingShot/SearingShot/careflow-ai-backend
+          git remote add hf https://SearingShot:${HF_TOKEN}@huggingface.co/spaces/SearingShot/careflow-ai-backend
 
           git push hf main --force
