@@ -379,7 +379,7 @@ Recent conversation:
                 "tool_activity": None
             }
     
-        # MODIFY APPOINTMENT
+    # MODIFY APPOINTMENT
     elif intent == "modify_appointment":
 
         extraction_prompt = f"""
